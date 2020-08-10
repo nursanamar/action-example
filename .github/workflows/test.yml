@@ -6,8 +6,8 @@ jobs:
     name: Clone 
     runs-on: ubuntu-latest
     steps:
-      name: "setup"
-      - uses: actions/checkout@v2
+      - name: "setup"
+        uses: actions/checkout@v2
         with:
           repository: nursanamar/PHP_CodeSniffer_OpenCart
         run: ls $GITHUB_WORKSPACE
