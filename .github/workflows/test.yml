@@ -21,4 +21,4 @@ jobs:
         uses: nursanamar/phpcs-action@master
         with:
           installed_paths: '${{ github.workspace }}/standard'
-          target_path: ${{ github.workspace }}/code'
+          target_path: '${{ github.workspace }}/code'
