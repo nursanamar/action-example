@@ -18,7 +18,7 @@ jobs:
       - name: test lint
         run: ls $GITHUB_WORKSPACE
       - name: PHPCS check
-        uses: nursanamar/phpcs-action
+        uses: nursanamar/phpcs-action@master
         with:
           installed_paths: '${{ github.workspace }}/standard'
           target_path: ${{ github.workspace }}/code'
