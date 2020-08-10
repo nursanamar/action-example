@@ -5,7 +5,8 @@ class ControllerExtensionModuleHpSocialLogin extends Controller {
    
     private $version = '1.6.5';
 
-    public function index() {
+    public function index() 
+    {
         $this->language->load('extension/module/hp_social_login');
 
         $this->rightman();
@@ -227,12 +228,12 @@ class ControllerExtensionModuleHpSocialLogin extends Controller {
         foreach ($inputs as $input) {
             $key = "module_hp_social_login_" . $input['name'];
 
-            if (isset($this->request->post[$key])) {
+            if(isset($this->request->post[$key])){
                 $data[$key] = $this->request->post[$key];
             } else if ($this->config->get($key)) {
                 $data[$key] = $this->config->get($key);
             } else {
-                $data[$key] = $input['default'];
+                $data[$key] = (int) $input['default'];
             }
         }
 
