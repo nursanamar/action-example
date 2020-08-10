@@ -5,7 +5,8 @@ class ControllerExtensionModuleHpSocialLogin extends Controller {
    
     private $version = '1.6.5';
 
-    public function index() {
+    public function index() 
+    {
         $this->language->load('extension/module/hp_social_login');
 
         $this->rightman();
