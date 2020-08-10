@@ -2,7 +2,7 @@
 
 class ControllerExtensionModuleHpSocialLogin extends Controller {
     private $error = array();
-    private $v_d = '';
+   
     private $version = '1.6.5';
 
     public function index() {
@@ -66,148 +66,13 @@ class ControllerExtensionModuleHpSocialLogin extends Controller {
         $this->response->setOutput($this->load->view('extension/module/validation', $data));
     }
 
-    protected function rightman() {
-        if (file_exists(dirname(getcwd()) . '/system/library/cache/hpasl_log')) {
-            $this->v_d = $this->VS(dirname(getcwd()) . '/system/library/cache/hpasl_log');
-            if ($this->v_d != $_SERVER['SERVER_NAME']) {
-                if ($this->internetAccess()) {
-                    $data = $this->get_remote_data('https://api.hpwebdesign.id/hpasl.txt');
-                    if (strpos($data, $_SERVER['SERVER_NAME']) !== false) {
-                        $eligible = $this->VD(dirname(getcwd()) . '/system/library/cache/hpasl_log');
-                        $this->hpasl(1, $eligible['date']);
-                        $this->response->redirect($this->url->link('extension/module/hp_social_login', 'user_token=' . $this->session->data['user_token'], true));
-                    }
-                } else {
-                    $this->error['warning'] = $this->language->get('error_no_internet_access');
-                }
-            }
-        } else {
-            if ($this->internetAccess()) {
-                $data = $this->get_remote_data('https://api.hpwebdesign.id/hpasl.txt');
-                if (strpos($data, $_SERVER['SERVER_NAME']) !== false) {
-                    $this->hpasl(1);
-                    $this->response->redirect($this->url->link('extension/module/hp_social_login', 'user_token=' . $this->session->data['user_token'], true));
-                }
-            } else {
-                $this->error['warning'] = $this->language->get('error_no_internet_access');
-            }
-        }
-    }
-
-    protected function hpasl($ref = 0, $date = null) {
-        $pf = dirname(getcwd()) . '/system/library/cache/hpasl_log';
-        if (!file_exists($pf)) {
-            fopen($pf, 'w');
-        }
-        $fh = fopen($pf, 'r');
-
-        if (!fgets($fh) || $ref = 1) {
-            $fh = fopen($pf, "wb");
-            if (!$fh) {
-                chmod($pf, 644);
-            }
-            fwrite($fh, "// HPWD -> Dilarang mengedit isi file ini untuk tujuan cracking validasi atau tindakan terlarang lainnya" . PHP_EOL);
-            $date = $date ? $date : date("d-m-Y", strtotime(date("d-m-Y") . ' + 1 year'));
-            fwrite($fh, $date . PHP_EOL);
-            fwrite($fh, $_SERVER['SERVER_NAME'] . PHP_EOL);
-        }
-
-        fclose($fh);
-    }
-
-    private function VD($path) {
-        $data = array();
-        $source = @fopen($path, 'r');
-        $i = 0;
-        if ($source) {
-            while ($line = fgets($source)) {
-                $line = trim($line);
-                if ($i == 1) {
-                    $diff = strtotime(date("d-m-Y")) - strtotime($line);
-                    if (floor($diff / (24 * 60 * 60) > 0)) {
-                        $data['status'] = 0;
-                    } else {
-                        $data['status'] = 1;
-                    }
-                    $data['date'] = $line;
-                }
-                $i++;
-            }
-            return $data;
-        }
-    }
-
-    private function VS($path) {
-        $source = @fopen($path, 'r');
-        $i = 0;
-        if ($source) {
-            while ($line = fgets($source)) {
-                $line = trim($line);
-                if ($i == 2) {
-                    return $line;
-                }
-                $i++;
-            }
-        }
-    }
-
+   
     public function flushdata() {
         $this->db->query("DELETE FROM " . DB_PREFIX . "setting WHERE `code` LIKE '%module_bundle%'");
     }
 
     public function curlcheck() {
         return in_array('curl', get_loaded_extensions()) ? true : false;
-    }
-
-    public function get_remote_data($url, $post_paramtrs = false) {
-        $c = curl_init();
-        curl_setopt($c, CURLOPT_URL, $url);
-        curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
-        if ($post_paramtrs) {
-            curl_setopt($c, CURLOPT_POST, true);
-            curl_setopt($c, CURLOPT_POSTFIELDS, "var1=bla&" . $post_paramtrs);
-        }
-        curl_setopt($c, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($c, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 6.1; rv:33.0) Gecko/20100101 Firefox/33.0");
-        curl_setopt($c, CURLOPT_COOKIE, 'CookieName1=Value;');
-        curl_setopt($c, CURLOPT_MAXREDIRS, 10);
-        $follow_allowed = (ini_get('open_basedir') || ini_get('safe_mode')) ? false : true;
-        if ($follow_allowed) {
-            curl_setopt($c, CURLOPT_FOLLOWLOCATION, 1);
-        }
-        curl_setopt($c, CURLOPT_CONNECTTIMEOUT, 30);
-        curl_setopt($c, CURLOPT_REFERER, $url);
-        curl_setopt($c, CURLOPT_TIMEOUT, 60);
-        curl_setopt($c, CURLOPT_AUTOREFERER, true);
-        curl_setopt($c, CURLOPT_ENCODING, 'gzip,deflate');
-        $data = curl_exec($c);
-        $status = curl_getinfo($c);
-        curl_close($c);
-        if ($status['http_code'] == 200) {
-            return $data;
-        } elseif ($status['http_code'] == 301 || $status['http_code'] == 302) {
-            if (!$follow_allowed) {
-                if (!empty($status['redirect_url'])) {
-                    $redirURL = $status['redirect_url'];
-                } else {
-                    preg_match('/href\=\"(.*?)\"/si', $data, $m);
-                    if (!empty($m[1])) {
-                        $redirURL = $m[1];
-                    }
-                }
-                if (!empty($redirURL)) {
-                    return call_user_func(__FUNCTION__, $redirURL, $post_paramtrs);
-                }
-            }
-        }
-        return "ERRORCODE22 with $url!!<br/>Last status codes<b/>:" . json_encode($status) . "<br/><br/>Last data got<br/>:$data";
-    }
-
-    private function internetAccess() {
-//  $connected = @fopen("http://google.com","r");
-        //return $connected ? true : false;
-        return true;
     }
 
     public function setting() {
@@ -479,6 +344,6 @@ class ControllerExtensionModuleHpSocialLogin extends Controller {
         if (!$chk->num_rows) {
             $error += 1;
         }
-        return $error ? false : true;
+        return ($error) ? false : true;
     }
 }
