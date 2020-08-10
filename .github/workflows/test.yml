@@ -3,20 +3,18 @@ on: push
 
 jobs:
   build:
-    name: Clone 
+    name: Check coding standard 
     runs-on: ubuntu-latest
     steps:            
-      - name: setup
+      - name: get coding standard
         uses: actions/checkout@v2
         with:
           repository: nursanamar/PHP_CodeSniffer_OpenCart
           path: standard
-      - name: prepere code
+      - name: get current code
         uses: actions/checkout@v2
         with:
           path: code
-      - name: test lint
-        run: ls $GITHUB_WORKSPACE
       - name: PHPCS check
         uses: nursanamar/phpcs-action@master
         with:
