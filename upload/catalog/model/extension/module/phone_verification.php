@@ -2,8 +2,7 @@
 
 class ModelExtensionModulePhoneVerification extends Model
 {
-    public function getEmailByPhone($phone)
-    {
+    public function getEmailByPhone($phone) {
         $sql = "SELECT `email` FROM " . DB_PREFIX . "customer WHERE telephone= '".$phone."'";
         $query = $this->db->query($sql);
 

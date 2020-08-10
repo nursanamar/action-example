@@ -2,8 +2,7 @@
 class ControllerExtensionModuleEmailVerification extends Controller
 {
 
-    public function index()
-    {
+    public function index() {
         if ($this->customer->isLogged()) {
             $this->loggingOut();
         }
@@ -33,16 +32,16 @@ class ControllerExtensionModuleEmailVerification extends Controller
 
         } else {
             // enable current customer
-            $this->db->query("UPDATE `" . DB_PREFIX . "customer` SET status = '1' WHERE customer_id = '" . (int) $result->row['customer_id'] . "'");
+            $this->db->query("UPDATE `" . DB_PREFIX . "customer` SET status = '1' WHERE customer_id = '" . (int)$result->row['customer_id'] . "'");
 
-            $this->db->query("DELETE FROM `" . DB_PREFIX . "customer_approval` WHERE customer_id = '" . (int) $result->row['customer_id'] . "' AND `type` = 'customer'");
+            $this->db->query("DELETE FROM `" . DB_PREFIX . "customer_approval` WHERE customer_id = '" . (int)$result->row['customer_id'] . "' AND `type` = 'customer'");
 
-            $this->db->query("DELETE FROM " . DB_PREFIX . "customer_verification WHERE customer_id = '" . (int) $result->row['customer_id'] . "'");
+            $this->db->query("DELETE FROM " . DB_PREFIX . "customer_verification WHERE customer_id = '" . (int)$result->row['customer_id'] . "'");
 
             // mark as verified customer
-            $this->db->query("INSERT INTO " . DB_PREFIX . "customer_verified SET customer_id = '" . (int) $result->row['customer_id'] . "', code='" . $this->request->get['v'] . "'");
+            $this->db->query("INSERT INTO " . DB_PREFIX . "customer_verified SET customer_id = '" . (int)$result->row['customer_id'] . "', code='" . $this->request->get['v'] . "'");
 
-            $customer = $this->db->query("SELECT email FROM " . DB_PREFIX . "customer WHERE customer_id = '" . (int) $result->row['customer_id'] . "'");
+            $customer = $this->db->query("SELECT email FROM " . DB_PREFIX . "customer WHERE customer_id = '" . (int)$result->row['customer_id'] . "'");
 
             $this->session->data['success'] = $this->language->get('success_verified');
             $data['text_message'] = $this->language->get('success_verified');
@@ -65,12 +64,11 @@ class ControllerExtensionModuleEmailVerification extends Controller
         
         $data['continue'] = $this->url->link('common/home');
         
-        $this->response->setOutput($this->load->view('common/success',$data));
+        $this->response->setOutput($this->load->view('common/success', $data));
 
     }
 
-    public function resend()
-    {
+    public function resend() {
         if ($this->customer->isLogged() || !isset($this->request->get['email'])) {
             $this->response->redirect($this->url->link('account/login'));
         }
@@ -84,12 +82,12 @@ class ControllerExtensionModuleEmailVerification extends Controller
 
         if ($customer_info) {
             list($usec, $sec) = explode(' ', microtime());
-            srand((float) $sec + ((float) $usec * 100000));
-            $code = md5((int) $customer_info['customer_id'] . ':' . rand());
+            srand((float)$sec + ((float)$usec * 100000));
+            $code = md5((int)$customer_info['customer_id'] . ':' . rand());
 
-            $this->db->query("DELETE FROM " . DB_PREFIX . "customer_verification WHERE customer_id = '" . (int) $customer_info['customer_id'] . "'");
+            $this->db->query("DELETE FROM " . DB_PREFIX . "customer_verification WHERE customer_id = '" . (int)$customer_info['customer_id'] . "'");
 
-            $this->db->query("INSERT INTO " . DB_PREFIX . "customer_verification SET customer_id = '" . (int) $customer_info['customer_id'] . "', code = '" . $code . "'");
+            $this->db->query("INSERT INTO " . DB_PREFIX . "customer_verification SET customer_id = '" . (int)$customer_info['customer_id'] . "', code = '" . $code . "'");
 
             $this->load->model('localisation/language');
             $languages = $this->model_localisation_language->getLanguages();
@@ -156,11 +154,10 @@ class ControllerExtensionModuleEmailVerification extends Controller
         $data['text_message'] = $this->language->get('text_resent_verified');
         $data['continue'] = $this->url->link('common/home');
 
-        $this->response->setOutput($this->load->view('common/success',$data));
+        $this->response->setOutput($this->load->view('common/success', $data));
     }
 
-    private function loggingOut()
-    {
+    private function loggingOut() {
         $this->customer->logout();
 
         unset($this->session->data['shipping_address']);

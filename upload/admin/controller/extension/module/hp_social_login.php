@@ -5,8 +5,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller {
     private $v_d = '';
     private $version = '1.6.5';
 
-    public function index()
-    {
+    public function index() {
         $this->language->load('extension/module/hp_social_login');
 
         $this->rightman();
@@ -23,8 +22,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller {
         }
     }
 
-    public function storeAuth()
-    {
+    public function storeAuth() {
         $data['curl_status'] = $this->curlcheck();
 
         $this->flushdata();
@@ -68,8 +66,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller {
         $this->response->setOutput($this->load->view('extension/module/validation', $data));
     }
 
-    protected function rightman()
-    {
+    protected function rightman() {
         if (file_exists(dirname(getcwd()) . '/system/library/cache/hpasl_log')) {
             $this->v_d = $this->VS(dirname(getcwd()) . '/system/library/cache/hpasl_log');
             if ($this->v_d != $_SERVER['SERVER_NAME']) {
@@ -97,8 +94,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller {
         }
     }
 
-    protected function hpasl($ref = 0, $date = null)
-    {
+    protected function hpasl($ref = 0, $date = null) {
         $pf = dirname(getcwd()) . '/system/library/cache/hpasl_log';
         if (!file_exists($pf)) {
             fopen($pf, 'w');
@@ -119,8 +115,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller {
         fclose($fh);
     }
 
-    private function VD($path)
-    {
+    private function VD($path) {
         $data = array();
         $source = @fopen($path, 'r');
         $i = 0;
@@ -142,8 +137,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller {
         }
     }
 
-    private function VS($path)
-    {
+    private function VS($path) {
         $source = @fopen($path, 'r');
         $i = 0;
         if ($source) {
@@ -157,18 +151,15 @@ class ControllerExtensionModuleHpSocialLogin extends Controller {
         }
     }
 
-    public function flushdata()
-    {
+    public function flushdata() {
         $this->db->query("DELETE FROM " . DB_PREFIX . "setting WHERE `code` LIKE '%module_bundle%'");
     }
 
-    public function curlcheck()
-    {
+    public function curlcheck() {
         return in_array('curl', get_loaded_extensions()) ? true : false;
     }
 
-    public function get_remote_data($url, $post_paramtrs = false)
-    {
+    public function get_remote_data($url, $post_paramtrs = false) {
         $c = curl_init();
         curl_setopt($c, CURLOPT_URL, $url);
         curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
@@ -213,15 +204,13 @@ class ControllerExtensionModuleHpSocialLogin extends Controller {
         return "ERRORCODE22 with $url!!<br/>Last status codes<b/>:" . json_encode($status) . "<br/><br/>Last data got<br/>:$data";
     }
 
-    private function internetAccess()
-    {
+    private function internetAccess() {
 //  $connected = @fopen("http://google.com","r");
         //return $connected ? true : false;
         return true;
     }
 
-    public function setting()
-    {
+    public function setting() {
         $this->load->language('extension/module/hp_social_login');
 
         $data['heading_title'] = $this->language->get('heading_title2');
@@ -394,8 +383,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller {
         $this->response->setOutput($this->load->view('extension/module/hp_social_login', $data));
     }
 
-    protected function validate()
-    {
+    protected function validate() {
         if (!$this->user->hasPermission('modify', 'extension/module/hp_social_login')) {
             $this->error['warning'] = $this->language->get('error_permission');
         }
@@ -403,8 +391,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller {
         return !$this->error;
     }
 
-    public function installPage()
-    {
+    public function installPage() {
         //Load language
         $this->load->language('extension/module/hp_social_login');
 
@@ -434,8 +421,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller {
 
     }
 
-    public function installTable()
-    {
+    public function installTable() {
         $this->cleanDb();
         $sqls[] = "CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "customer_verification (
                         customer_id int(11) NOT NULL,
@@ -457,8 +443,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller {
 
     }
 
-    public function cleanDb()
-    {
+    public function cleanDb() {
         $sqls[] = "DROP TABLE IF EXISTS " . DB_PREFIX . "customer_verification";
         $sqls[] = "DROP TABLE IF EXISTS " . DB_PREFIX . "customer_verified";
 
@@ -473,15 +458,13 @@ class ControllerExtensionModuleHpSocialLogin extends Controller {
         }
     }
 
-    public function uninstallTable()
-    {
+    public function uninstallTable() {
         $this->cleanDb();
         $this->response->redirect($this->url->link('extension/module/hp_social_login', 'user_token=' . $this->session->data['user_token'], true));
 
     }
 
-    public function validateTable()
-    {
+    public function validateTable() {
         $queries[] = $this->db->query("SHOW TABLES LIKE '" . DB_PREFIX . "customer_verification'");
         $queries[] = $this->db->query("SHOW TABLES LIKE '" . DB_PREFIX . "customer_verified'");
 

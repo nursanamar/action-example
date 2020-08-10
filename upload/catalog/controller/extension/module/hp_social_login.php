@@ -4,8 +4,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller
 {
     public $error = [];
 
-    public function index($arg = [])
-    {
+    public function index($arg = []) {
         $onlyButton = isset($arg['onlybutton']) ? $arg['onlybutton'] : true;
 
         return $this->template($onlyButton);
@@ -63,8 +62,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller
         $this->response->setOutput(json_encode($json));
     }
 
-    public function validateLogin()
-    {
+    public function validateLogin() {
         // HPPV
         if ($this->request->post['email'] == '' || $this->request->post['password'] == '') {
             $this->error['warning'] = $this->language->get('error_login');
@@ -171,8 +169,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller
 
     }
 
-    public function template($onlyButton)
-    {
+    public function template($onlyButton) {
         if ($this->config->get('module_hp_social_login_status')) {
             $this->load->language('extension/module/hp_social_login');
             $this->document->addScript('catalog/view/javascript/jquery.validate.min.js');
@@ -266,9 +263,9 @@ class ControllerExtensionModuleHpSocialLogin extends Controller
             $data['register'] = $this->url->link('extension/module/hp_social_login/registerEmail', '', true);
             $data['registerSMS'] = $this->url->link('extension/module/hp_social_login/registerSMS', '', true);
 
-            if(!$onlyButton){
+            if (!$onlyButton) {
                 return $this->load->view('extension/module/hp_social_login', $data);
-            }else{
+            } else {
                 return $this->load->view('extension/module/hp_social_login_button', $data);
             }
 
@@ -278,8 +275,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller
 
     }
 
-    public function registerEmail()
-    {
+    public function registerEmail() {
         $this->load->model('account/customer');
         $this->load->language('account/register');
 
@@ -294,8 +290,8 @@ class ControllerExtensionModuleHpSocialLogin extends Controller
             $this->model_account_customer->deleteLoginAttempts($this->request->post['email']);
 
             if ($this->config->get('module_hp_social_login_email_status')) {
-                $this->db->query("UPDATE `" . DB_PREFIX . "customer` SET status = '0' WHERE customer_id = '" . (int) $customer_id . "'");
-                $this->db->query("INSERT INTO `" . DB_PREFIX . "customer_approval` SET customer_id = '" . (int) $customer_id . "', type = 'customer', date_added = NOW()");
+                $this->db->query("UPDATE `" . DB_PREFIX . "customer` SET status = '0' WHERE customer_id = '" . (int)$customer_id . "'");
+                $this->db->query("INSERT INTO `" . DB_PREFIX . "customer_approval` SET customer_id = '" . (int)$customer_id . "', type = 'customer', date_added = NOW()");
             } else {
                 $this->customer->login($this->request->post['email'], $this->request->post['password']);
             }
@@ -319,8 +315,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller
         $this->response->setOutput(json_encode($json));
     }
 
-    public function registerSMS()
-    {
+    public function registerSMS() {
         $this->load->model('account/customer');
 
         $json['status'] = false;
@@ -354,8 +349,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller
         $this->response->setOutput(json_encode($json));
     }
 
-    public function facebook()
-    {
+    public function facebook() {
         if (!isset($this->request->get['acces_token'])) {
             $this->response->redirect($this->url->link('account/login', '', true));
         }
@@ -405,8 +399,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller
 
     }
 
-    public function google()
-    {
+    public function google() {
         if (isset($this->request->get['error'])) {
             $this->response->redirect($this->url->link('account/login', '', true));
         }
@@ -460,8 +453,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller
 
     }
 
-    protected function completeLogin()
-    {
+    protected function completeLogin() {
         unset($this->session->data['guest']);
 
         // Default Shipping Address
@@ -477,8 +469,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller
 
     }
 
-    public function updateProfile()
-    {
+    public function updateProfile() {
         if (!$this->customer->isLogged()) {
             $this->response->redirect($this->url->link('common/home', '', true));
         }
@@ -527,8 +518,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller
         
     }
 
-    protected function validate($email)
-    {
+    protected function validate($email) {
 
         $this->load->language('account/login');
 
@@ -546,9 +536,9 @@ class ControllerExtensionModuleHpSocialLogin extends Controller
 
         if ($customer_info && !$customer_info['status']) {
             // enable current customer
-            $this->db->query("UPDATE `" . DB_PREFIX . "customer` SET status = '1' WHERE customer_id = '" . (int) $customer_info['customer_id'] . "'");
+            $this->db->query("UPDATE `" . DB_PREFIX . "customer` SET status = '1' WHERE customer_id = '" . (int)$customer_info['customer_id'] . "'");
 
-            $this->db->query("DELETE FROM `" . DB_PREFIX . "customer_approval` WHERE customer_id = '" . (int) $customer_info['customer_id'] . "' AND `type` = 'customer'");
+            $this->db->query("DELETE FROM `" . DB_PREFIX . "customer_approval` WHERE customer_id = '" . (int)$customer_info['customer_id'] . "' AND `type` = 'customer'");
 
         }
 
@@ -565,8 +555,7 @@ class ControllerExtensionModuleHpSocialLogin extends Controller
         return !$this->error;
     }
 
-    protected function validateRegisterEmail()
-    {
+    protected function validateRegisterEmail() {
         if ($this->model_account_customer->getTotalCustomersByEmail($this->request->post['email'])) {
             $this->error['warning'] = $this->language->get('error_exists');
         }
@@ -597,17 +586,16 @@ class ControllerExtensionModuleHpSocialLogin extends Controller
         return !$this->error;
     }
 
-    protected function validateRegisterSMS()
-    {
+    protected function validateRegisterSMS() {
         $this->load->language('extension/module/hp_social_login');
         $this->load->model('extension/module/hp_social_login');
         $prefix = substr($this->request->post['telephone'], 0, 2);
 
-        if ($prefix = "+6"){
+        if ($prefix = "+6") {
             $no_telephone = substr($this->request->post['telephone'], 3, 12); 
-        }else if ($prefix = "62"){
+        } else if ($prefix = "62") {
             $no_telephone = substr($this->request->post['telephone'], 2, 12); 
-        }else{
+        } else {
             $no_telephone = substr($this->request->post['telephone'], 1, 12); 
         }
 

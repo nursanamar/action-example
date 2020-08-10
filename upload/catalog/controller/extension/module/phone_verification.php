@@ -3,8 +3,7 @@
 class ControllerExtensionModulePhoneVerification extends Controller
 {
 
-    public function sendVerificationCode()
-    {
+    public function sendVerificationCode() {
         $status = false;
         if (isset($this->request->get['phone'])) {
 
@@ -20,8 +19,7 @@ class ControllerExtensionModulePhoneVerification extends Controller
         $this->response->setOutput(json_encode($status));
     }
 
-    public function checkVerificationCode()
-    {
+    public function checkVerificationCode() {
         $status = false;
 
         if (isset($this->request->get['phone']) && isset($this->request->get['code'])) {
@@ -39,8 +37,7 @@ class ControllerExtensionModulePhoneVerification extends Controller
         $this->response->setOutput(json_encode($status));
     }
 
-    private function generateCode()
-    {
+    private function generateCode() {
         $count = 4;
         $result = "";
 
@@ -51,8 +48,7 @@ class ControllerExtensionModulePhoneVerification extends Controller
         return $result;
     }
 
-    private function getCode($phone)
-    {
+    private function getCode($phone) {
         $time = $this->config->get('module_hp_social_login_sms_expiry') * 60;
         $cache = new \Cache('file', $time);
         $cacheSuffix = "hpasl";
@@ -67,8 +63,7 @@ class ControllerExtensionModulePhoneVerification extends Controller
         }
     }
 
-    private function createMsg($code)
-    {
+    private function createMsg($code) {
         $default_format = 'Demi keamanan akun Anda, mohon tidak memberikan kode verifikasi kepada siapapun. kode verifikasi berlaku 15 menit: {code}';
         $setting_format = $this->config->get('module_hp_social_login_message_' . $this->config->get('config_language_id'));
         if (is_null($setting_format)) {
@@ -91,8 +86,7 @@ class ControllerExtensionModulePhoneVerification extends Controller
         return $msg;
     }
 
-    private function sendSms($phone, $message)
-    {
+    private function sendSms($phone, $message) {
         $gateway = $this->config->get('module_hp_social_login_sms_gateway');
 
         switch ($gateway) {
@@ -109,8 +103,7 @@ class ControllerExtensionModulePhoneVerification extends Controller
         }
     }
 
-    public function wavecellSMS($phone, $message)
-    {
+    public function wavecellSMS($phone, $message) {
         $curl = curl_init();
         $phone = preg_replace('/^(^\+62\s?|^0)/m', "+62", $phone);
 
@@ -156,8 +149,7 @@ class ControllerExtensionModulePhoneVerification extends Controller
         }
     } 
 
-    public function zenvivaSMS($phone, $message)
-    {
+    public function zenvivaSMS($phone, $message) {
         $curl = curl_init();
 
         // $passkey = urlencode("zenzivaB1sm1ll@hi");

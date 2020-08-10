@@ -9,16 +9,15 @@ class ModelExtensionModuleHpSocialLogin extends Model
     }
     
     public function editCustomer($customer_id, $data) {
-        if(isset($data['email'])) {
+        if (isset($data['email'])) {
             $this->db->query("UPDATE " . DB_PREFIX . "customer SET email = '" . $this->db->escape($data['email']) . "' WHERE customer_id = '" . (int)$customer_id . "'");
         }      
-        if(isset($data['telephone'])) {
+        if (isset($data['telephone'])) {
             $this->db->query("UPDATE " . DB_PREFIX . "customer SET telephone = '" . $this->db->escape($data['telephone']) . "' WHERE customer_id = '" . (int)$customer_id . "'");
         }    
     }
 
-    public function getFbProfile($access_token)
-    {
+    public function getFbProfile($access_token) {
 
         $curl = curl_init();
 
@@ -52,8 +51,7 @@ class ModelExtensionModuleHpSocialLogin extends Model
         }
     }
 
-    public function getGoogleProfile($code)
-    {
+    public function getGoogleProfile($code) {
         $access_token = $this->getGoogleToken($code);
 
         if (!$access_token) {
@@ -84,13 +82,12 @@ class ModelExtensionModuleHpSocialLogin extends Model
         if ($err) {
             return false;
         } else {
-            return json_decode($response,true);
+            return json_decode($response, true);
         }
 
     }
 
-    public function getGoogleToken($code)
-    {
+    public function getGoogleToken($code) {
         $curl = curl_init();
 
         $data = array(
