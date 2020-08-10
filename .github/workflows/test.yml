@@ -1,8 +1,11 @@
 name: Test
-on: [push,pull_request]
+on: 
+  push:
+      paths-ignore:
+      - '.github/**'
 
 jobs:
-  build:
+  test:
     name: Check coding standard 
     runs-on: ubuntu-latest
     steps:            
