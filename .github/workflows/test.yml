@@ -6,9 +6,6 @@ jobs:
     name: Clone 
     runs-on: ubuntu-latest
     steps:            
-      - uses: php-actions/composer@master
-        with:
-          command: global require "squizlabs/php_codesniffer=*"
       - name: setup
         uses: actions/checkout@v2
         with:
