@@ -17,3 +17,7 @@ jobs:
           path: code
       - name: test lint
         run: ls $GITHUB_WORKSPACE
+      - name: PHPCS check
+        uses: chekalsky/phpcs-action@v1
+        with:
+          installed_paths: '${{ github.workspace }}/standard'

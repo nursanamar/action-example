@@ -1,0 +1,723 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+    <name>HP Social Login</name>
+    <code>HPSocialLogin</code>
+    <version>1.6.5</version>
+    <author>HP Web Design</author>
+    <link>https://hpwebdesign.id</link>
+
+    <file path="admin/language/en-gb/common/column_left.php">
+        <operation error="skip">
+            <search><![CDATA[// Text]]></search>
+            <add position="after">
+                <![CDATA[// HPEV
+                    $_['text_hp_social_login']         = 'HP Social Login';
+                    // HPEV]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="admin/controller/common/column_left.php">
+        <operation error="skip">
+            <search><![CDATA[$hpwd = array();]]></search>
+            <add position="after">
+                <![CDATA[
+                    // HPEV
+
+                    if ($this->user->hasPermission('access', 'extension/module/hp_social_login')) {
+                        $hpwd[] = array(
+                            'name'     => $this->language->get('text_hp_social_login'),
+                            'href'     => $this->url->link('extension/module/hp_social_login', 'user_token=' . $this->session->data['user_token'], true),
+                            'children' => array()
+                        );
+                    }
+
+                    // HPEV
+                ]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/{product/product.php,journal3/blocks.php,journal3/product_tabs.php}">
+        <operation error="skip">
+            <search><![CDATA[$data['text_login'] = sprintf($this->language->get('text_login'), $this->url->link('account/login', '', true), $this->url->link('account/register', '', true));]]></search>
+            <add position="replace">
+                <![CDATA[
+                    $data['text_login'] = sprintf($this->language->get('text_login'),'javascript:openLoginModal()', 'javascript:openRegisterModal()');
+                ]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/account/login.php">
+        <operation>
+            <search><![CDATA[$data['header'] = $this->load->controller('common/header');]]></search>
+            <add position="after">
+                <![CDATA[
+                $data['social_buttons'] = $this->load->controller('extension/module/hp_social_login', ['onlybutton' => true]);
+            ]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/*/template/account/login.twig">
+        <operation>
+            <search><![CDATA[{{ header }}]]></search>
+            <add position="after"><![CDATA[
+                <script>
+                    var preventHPASLRedirect = true;
+                </script>
+            ]]></add>
+        </operation>
+        <operation error="skip">
+            <search><![CDATA[<input type="submit" value="{{ button_login }}" class="btn btn-primary" />]]></search>
+            <add position="after">
+                <![CDATA[
+                    {{ social_buttons }}
+                ]]>
+            </add>
+        </operation>
+    </file>
+    <file path="catalog/view/theme/basel/template/account/login.twig">
+        <operation error="skip">
+            <search><![CDATA[<input type="submit" value="{{ button_login }}" class="btn btn-outline btn-block" />]]></search>
+            <add position="after">
+                <![CDATA[
+                    {{ social_buttons }}
+                ]]>
+            </add>
+        </operation>
+    </file>
+    <file path="admin/controller/common/header.php">
+        <operation error="skip">
+            <search trim="true"><![CDATA[return $this->load->view('common/header', $data);]]></search>
+            <add position="before"><![CDATA[
+        $this->session->data['hp_ext'][]= array(
+            "code"  => "hpasl",
+            "group" => "module_hp_social_login",
+            "link"  => "extension/module/hp_social_login",
+            "name"  => "HP Social Login");
+            ]]></add>
+        </operation>
+    </file>
+    <file path="catalog/language/en-gb/account/register.php">
+        <operation>
+            <search><![CDATA[// Entry]]></search>
+            <add position="before">
+                <![CDATA[
+                    // HPPV
+                    $_['entry_verification']     = "Verification code";
+                    $_['text_send_verification'] = "Send Verification code";
+                    $_['sms_format']             = "";
+                    $_['error_code']             = "Invalid Code, please send verification again!";
+                    $_['success_code']           = "Valid Code!";
+                    $_['error_phone_number']     = "Phone number invalid";
+                    $_['text_social_login']      = "Login with your Social Account";
+                    // HPPV
+                ]]>
+            </add>
+        </operation>
+
+        <operation>
+            <search><![CDATA[$_['entry_telephone']      = 'Telephone';]]></search>
+            <add position="replace">
+                <![CDATA[
+                    // HPPV
+                   $_['entry_telephone']      = 'Phone number';
+                    // HPPV
+                ]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/account/login.php">
+        <operation>
+            <search><![CDATA[if (isset($this->request->post['redirect']) && $this->request->post['redirect'] != $this->url->link('account/logout', '', true) && (strpos($this->request->post['redirect'], $this->config->get('config_url')) !== false || strpos($this->request->post['redirect'], $this->config->get('config_ssl')) !== false)) {]]></search>
+            <add position="before">
+                <![CDATA[
+                    if($this->config->get('module_hp_social_login_redirect')){
+                        $this->response->redirect($this->url->link('common/home', '', true));
+                    }
+                ]]>
+            </add>
+        </operation>
+
+        <operation>
+            <search><![CDATA[protected function validate() {]]></search>
+            <add position="after">
+                <![CDATA[
+                    // HPPV
+                    if($this->request->post['email'] == '' || $this->request->post['password'] == ''){
+                        $this->error['warning'] = $this->language->get('error_login');
+                        return false;
+                    }
+                    $isPhone = false;
+                    $re = '/^(([^<>()\[\]\\\\.,;:\s@"]+(\.[^<>()\[\]\\\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/m';
+                    if (preg_match($re,$this->request->post['email']) == 0 && !($this->request->post['email'] == '')) {
+                        $this->load->model('extension/module/phone_verification');
+
+                        $email = $this->model_extension_module_phone_verification->getEmailByPhone($this->request->post['email']);
+                        if ($email) {
+                            $isPhone = false;
+                            $this->request->post['email'] = $email;
+                        }else{
+                            $isPhone = true;
+                        }
+
+                    }
+                    // HPPV
+                ]]>
+            </add>
+        </operation>
+
+        <operation>
+            <search><![CDATA[if (!$this->customer->login($this->request->post['email'], $this->request->post['password'])) {]]></search>
+            <add position="replace">
+                <![CDATA[
+                    if ($isPhone) {
+                        $logged = $this->customer->loginByPhone($this->request->post['email'], $this->request->post['password']);
+                    } else {
+                        $logged = $this->customer->login($this->request->post['email'], $this->request->post['password']);
+                    }
+
+                    if (!$logged) {
+                ]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/language/en-gb/{account/login.php,checkout/checkout.php}">
+        <operation>
+            <search><![CDATA[// Error]]></search>
+            <add position="after">
+                <![CDATA[
+                    // HPPV
+                    $_['entry_email']                  = 'E-Mail Address/Phone number';
+                    $_['text_social_login']            = 'Login with your Social Account';
+                    // HPPV
+                ]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/*/template/common/footer.twig">
+        <operation>
+            <search><![CDATA[</body></html>]]></search>
+            <add position="before">
+                <![CDATA[
+                     {{ social_login }}
+                ]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/common/footer.php">
+        <operation>
+            <search><![CDATA[return $this->load->view('common/footer', $data);]]></search>
+            <add position="before">
+                <![CDATA[
+                if($this->config->get('module_hp_social_login_status')) {
+                    if ($this->customer->isLogged()){
+                       $data['account'] = $this->url->link('account/account', '', true);
+                    } else {
+                         $data['account'] = 'javascript:openLoginModal();';
+                    }
+
+                    $this->document->addStyle('catalog/view/javascript/hpasl.css');
+
+                    $data['social_login'] = $this->load->controller('extension/module/hp_social_login',['onlybutton' => false]);
+                 }]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/common/header.php">
+        <operation>
+            <search><![CDATA[$data['telephone'] = $this->config->get('config_telephone');]]></search>
+            <add position="after">
+                <![CDATA[
+                if($this->config->get('module_hp_social_login_status')) {
+                   $data['login']    = 'javascript:openLoginModal();';
+                   $data['register'] = 'javascript:openRegisterModal();';
+                } ]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/mail/register.php">
+        <operation>
+            <search><![CDATA[$this->load->language('mail/register');]]></search>
+            <add position="before">
+                <![CDATA[
+                    if($args[0]['email'] == '') {
+                        return;
+                    }
+                ]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/checkout/checkout.php">
+        <operation>
+            <search><![CDATA[if ((!$this->cart->hasProducts() && empty($this->session->data['vouchers'])) || (!$this->cart->hasStock() && !$this->config->get('config_stock_checkout'))) {]]></search>
+            <add position="before">
+                <![CDATA[
+                    if ($this->customer->isLogged() && ($this->customer->getEmail() == '')) {
+                        $this->response->redirect($this->url->link('checkout/cart'));
+                    }
+                ]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="system/library/cart/customer.php">
+        <operation>
+            <search><![CDATA[public function login($email, $password, $override = false) {]]></search>
+            <add position="before">
+                <![CDATA[
+                    public function loginByPhone($telephone, $password, $override = false) {
+                        if ($override) {
+                            $customer_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "customer WHERE LOWER(telephone) = '" . $this->db->escape(utf8_strtolower($telephone)) . "' AND status = '1'");
+                        } else {
+                            $customer_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "customer WHERE LOWER(telephone) = '" . $this->db->escape(utf8_strtolower($telephone)) . "' AND (password = SHA1(CONCAT(salt, SHA1(CONCAT(salt, SHA1('" . $this->db->escape($password) . "'))))) OR password = '" . $this->db->escape(md5($password)) . "') AND status = '1'");
+                        }
+
+                        if ($customer_query->num_rows) {
+                            $this->session->data['customer_id'] = $customer_query->row['customer_id'];
+
+                            $this->customer_id = $customer_query->row['customer_id'];
+                            $this->firstname = $customer_query->row['firstname'];
+                            $this->lastname = $customer_query->row['lastname'];
+                            $this->customer_group_id = $customer_query->row['customer_group_id'];
+                            $this->email = $customer_query->row['email'];
+                            $this->telephone = $customer_query->row['telephone'];
+                            $this->newsletter = $customer_query->row['newsletter'];
+                            $this->address_id = $customer_query->row['address_id'];
+
+                            $this->db->query("UPDATE " . DB_PREFIX . "customer SET language_id = '" . (int)$this->config->get('config_language_id') . "', ip = '" . $this->db->escape($this->request->server['REMOTE_ADDR']) . "' WHERE customer_id = '" . (int)$this->customer_id . "'");
+
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                ]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/language/en-gb/account/success.php">
+        <operation error="skip">
+            <search><![CDATA[// Text]]></search>
+            <add position="after">
+                <![CDATA[// HPEV
+                    $_['heading_verification']      = 'Verify Your Account';
+                    // HPEV]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/language/id-id/account/success.php">
+        <operation error="skip">
+            <search><![CDATA[// Text]]></search>
+            <add position="after">
+                <![CDATA[// HPEV
+                    $_['heading_verification']      = 'Verifikasi Akun Anda';
+                    // HPEV]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/account/success.php">
+        <operation error="skip">
+            <search><![CDATA[$data['text_message'] = sprintf($this->language->get('text_approval'), $this->config->get('config_name'), $this->url->link('information/contact'));]]></search>
+            <add position="replace"><![CDATA[
+                //HPEV
+                if ($this->config->get('module_hp_social_login_email_status')) {
+                    $data['heading_title'] = $this->language->get('heading_verification');
+
+                    $this->document->setTitle($this->language->get('heading_verification'));
+
+                    if (isset($this->session->data['customer_email'])) {
+
+                        $this->load->model('localisation/language');
+                        $languages = $this->model_localisation_language->getLanguages();
+                        $defaultLanguage = $this->config->get('config_language');
+                        $language_id = $languages[$defaultLanguage]['language_id'];
+
+                        $template = $this->config->get('module_hp_social_login_email_verification_text_' . $language_id);
+                        $find = array(
+                                                "{email}",
+                                                "{resend}"
+                                );
+                        $replace = array(
+                                                "email" => $this->session->data['customer_email'],
+                                                "resend" => $this->url->link('extension/module/email_verification/resend', 'email=' . $this->session->data['customer_email'], true)
+                        );
+                        $text_message = str_replace(array("\r\n", "\r", "\n"), '<br />', preg_replace(array("/\s\s+/", "/\r\r+/", "/\n\n+/"), '<br />', trim(str_replace($find, $replace, $template))));
+
+                        $data['text_message'] = html_entity_decode($text_message);
+                        unset($this->session->data['customer_email']);
+                    } else {
+                        $data['success'] = $this->language->get('text_verification');
+                    }
+
+                } else {
+                    $data['text_message'] = sprintf($this->language->get('text_approval'), $this->config->get('config_name'), $this->url->link('information/contact'));
+                }
+                // HPEV
+            ]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/mail/register.php">
+        <operation error="skip">
+            <search index="0"><![CDATA[$this->load->language('mail/register');]]></search>
+            <add position="replace"><![CDATA[
+                // HPEV
+                $this->load->language('mail/register');
+                $emailContent = "";
+                        $isHtml = false;
+                if ($this->config->get('module_hp_social_login_email_status')) {
+                    $customer_id = $output;
+
+                    if (true) {
+
+                        list($usec, $sec) = explode(' ', microtime());
+                        srand((float) $sec + ((float) $usec * 100000));
+                        $code = md5($customer_id . ':' . rand());
+
+                        $this->db->query("DELETE FROM " . DB_PREFIX . "customer_verification WHERE customer_id = '" . (int) $customer_id . "'");
+                        $this->db->query("INSERT INTO " . DB_PREFIX . "customer_verification SET customer_id = '" . (int) $customer_id . "', code = '" . $code . "'");
+
+                        $this->load->model('localisation/language');
+                        $languages = $this->model_localisation_language->getLanguages();
+                        $defaultLanguage = $this->config->get('config_language');
+                        $language_id = $languages[$defaultLanguage]['language_id'];
+
+                        $template = $this->config->get('module_hp_social_login_email_message_text_' . $language_id);
+
+                        $this->load->model('account/customer');
+                        $customer_info = $this->model_account_customer->getCustomer($customer_id);
+
+                        $find = array(
+                            "{firstname}",
+                            "{lastname}",
+                            "{email-link}",
+                        );
+
+                        $replace = array(
+                            "firstname" => $customer_info['firstname'],
+                            "lastname" => $customer_info['lastname'],
+                            "email-link" => $this->url->link('extension/module/email_verification', '', true) . '&v=' . $code,
+                        );
+
+                        $msg = str_replace(array("\r\n", "\r", "\n"), '<br />', preg_replace(array("/\s\s+/", "/\r\r+/", "/\n\n+/"), '<br />', trim(str_replace($find, $replace, $template))));
+                                        $data['content'] = html_entity_decode($msg);
+                                        $isHtml = true;
+                        $emailContent = $this->load->view('mail/register_1', $data);
+                    }
+
+                } else {
+
+                //HPEV
+            ]]></add>
+        </operation>
+
+        <operation error="skip">
+            <search><![CDATA[$data['store'] = html_entity_decode($this->config->get('config_name'), ENT_QUOTES, 'UTF-8');]]></search>
+            <add position="after">
+                <![CDATA[
+                //HPEV
+
+            $emailContent = $this->load->view('mail/register', $data);
+        }
+        //HPEV
+            ]]>
+            </add>
+        </operation>
+
+        <operation error="skip">
+            <search><![CDATA[$mail->setText($this->load->view('mail/register', $data));]]></search>
+            <add position="replace"><![CDATA[
+                //HPEV
+        if ($isHtml) {
+            $mail->setHtml($emailContent);
+        } else {
+            $mail->setText($emailContent);
+        }
+        //HPEV
+            ]]></add>
+        </operation>
+    </file>
+
+
+    <file path="catalog/view/theme/*/template/checkout/login.twig">
+        <operation error="skip">
+            <search><![CDATA[<div class="row">]]></search>
+            <add position="before">
+                <![CDATA[
+                    <script type="text/javascript">
+
+                    grecaptcha.render('google-recaptcha', {'sitekey' : '{{ google_sitekey }}'});
+
+                      openLoginModal();
+
+                      checkAccount();
+
+                      function checkAccount() {
+                        let account = $('input[name=account]:checked').val()
+
+                        if (account == 'guest') {
+                          $("#button-account").attr("disabled",false);
+                        } else {
+                          $("#button-account").attr("disabled",true);
+                        }
+                      }
+
+                      $("input[name=account]").on("change",checkAccount)
+                    </script>
+                ]]>
+            </add>
+        </operation>
+
+        <operation error="skip">
+            <search><![CDATA[<label> {% if account == 'register' %}]]></search>
+            <add position="replace">
+                <![CDATA[
+                    <button onclick="openRegisterModal()" class="btn btn-primary">{{ text_register }}</button>
+                    <label style="display:none"> {% if account == 'register' %}
+                ]]>
+            </add>
+        </operation>
+
+        <operation error="skip">
+            <search><![CDATA[<input type="button" value="{{ button_login }}" id="button-login" data-loading-text="{{ text_loading }}" class="btn btn-primary" />]]></search>
+            <add position="after">
+                <![CDATA[
+                    {{ social_buttons }}
+                ]]>
+            </add>
+        </operation>
+
+        <operation error="skip">
+            <search><![CDATA[<a href="{{ forgotten }}">{{ text_forgotten }}</a></div>]]></search>
+            <add position="after">
+                <![CDATA[
+                <input type="hidden" name="redirect" value="{{ redirect }}" />
+
+                {% if captcha_status %}
+                    <div class="form-group">
+                        <label class="control-label" for="input-password">{{ entry_captcha }}</label>
+                        <div class="g-recaptcha" id="google-recaptcha" data-sitekey="{{ google_sitekey }}"></div>
+                    </div>
+            {% endif %}]]>
+            </add>
+        </operation>
+
+        <operation error="skip">
+            <search><![CDATA[<input type="radio" name="account" value="register" checked="checked" />]]></search>
+            <add position="replace">
+                <![CDATA[
+                    <input type="radio" name="account" value="register" />
+                ]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/default/template/checkout/checkout.twig">
+        <operation>
+            <search><![CDATA[url: 'index.php?route=checkout/login/save',]]></search>
+            <add position="replace">
+                <![CDATA[
+                url: 'index.php?route=extension/module/hp_social_login/login',
+            ]]>
+            </add>
+        </operation>
+
+        <operation>
+            <search><![CDATA[$('input[name=\'password\']').parent().addClass('has-error');]]></search>
+            <add position="after">
+                <![CDATA[
+                $('input[name=\'captcha\']').parent().addClass('has-error');
+            ]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/checkout/login.php">
+        <operation>
+            <search><![CDATA[$data['forgotten'] = $this->url->link('account/forgotten', '', true);]]></search>
+            <add position="after"><![CDATA[
+            $data['google_sitekey'] = $this->config->get('captcha_google_key');
+        $data['social_buttons'] = $this->load->controller('extension/module/hp_social_login', ['onlybutton' => true]);
+        $data['captcha_status'] = $this->config->get('module_hp_social_login_captcha_status');
+        $data['redirect']       = $this->url->link('checkout/checkout', '', true);
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/common/header.php">
+        <operation>
+            <search><![CDATA[public function index() {]]></search>
+            <add position="after"><![CDATA[
+            $this->document->addScript('https://www.google.com/recaptcha/api.js');
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/common/footer.php">
+        <operation>
+            <search><![CDATA[public function index() {]]></search>
+            <add position="after"><![CDATA[
+            $this->load->language('extension/module/hp_social_login');
+            $profile_incomplete = $this->profileIncomplete();
+            $data['profile_incomplete'] = $profile_incomplete;
+
+            $data['profile_action'] = $this->url->link('extension/module/hp_social_login/updateProfile');
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search><![CDATA[public function index() {]]></search>
+            <add position="before"><![CDATA[
+            protected function profileIncomplete(){
+
+                $profile_incomplete = array();
+
+                if ($this->customer->isLogged() && ($this->customer->getEmail() == '')) {
+                    $profile_incomplete['email'] = true;
+                } else {
+                    $profile_incomplete['email'] = false;
+                }
+
+                if ($this->customer->isLogged() && ($this->customer->getTelephone() == '')) {
+                    $profile_incomplete['telephone'] = true;
+                } else {
+                    $profile_incomplete['telephone'] = false;
+                }
+
+                return $profile_incomplete;
+            }
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/*/template/common/footer.twig">
+        <operation>
+            <search><![CDATA[</body>]]></search>
+            <add position="before"><![CDATA[
+            <div id="profileIncomplete" class="modal fade hpasl-modal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">{{ text_incomplete_title }}</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    {{ text_incomplete_desc }}
+                </p>
+                <form class="form-horizontal" id="profileIncompleteForm" action="{{ profile_action }}" method="post" enctype="multipart/form-data">
+                    <div style="display:none" class="alert alert-danger"></div>
+                    {% if profile_incomplete.email %}
+                        <div class="form-group required">
+                            <div class="col-sm-12">
+                                <label class="item">
+                                    <i class="icon fa fa-envelope-o"></i>
+                                    <input type="email" name="email" placeholder="email" class="form-control" />
+                                </label>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if profile_incomplete.telephone %}
+                        <div class="form-group required">
+                            <div class="col-sm-12">
+                                <label class="item">
+                                    <i class="icon fa fa-mobile-phone"></i>
+                                    <input type="text" name="telephone" placeholder="Telephone" class="form-control" />
+                                </label>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <div class="col-sm-12">
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary hpasl-buttons">Save Profile&nbsp;<i class="fa fa-save" ></i></button>
+                                <button style="display:none" class="btn btn-primary loading-form">
+                                    <i class="fa fa-circle-o-notch fa-spin"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="clearfix"></div>
+            <div class="modal-footer"></div>
+        </div>
+    </div>
+</div>
+    <script>
+    var profile_incomplete = {{ profile_incomplete|json_encode() }};
+    if (profile_incomplete['email'] || profile_incomplete['telephone']) {
+        $('#profileIncomplete').modal('show');
+    }
+
+    var profile_incomplete_rules = {}
+
+    if (profile_incomplete['email']) {
+        profile_incomplete_rules['email'] = {required:true}
+    }
+
+    if (profile_incomplete['telephone']) {
+        profile_incomplete_rules['telephone'] = {required:true}
+    }
+
+    $("#profileIncompleteForm").validate({
+                rules: profile_incomplete_rules,
+                errorElement: "div",
+                errorClass: "text-danger",
+                submitHandler: (form) => {
+                    let alert = $('.alert', $(form));
+                    let button = $('input[type=submit]', $(form));
+                    let loading = $(".loading-form", $(form));
+                    alert.hide();
+                    button.hide();
+                    loading.show();
+                    ajaxSubmit(form, (json) => {
+                        if (!json['status']) {
+                            alert.html(json['error']['warning']);
+                            alert.show();
+                            button.show();
+                            loading.hide();
+                        } else {
+                            $('#profileIncomplete').modal('hide');
+                        }
+                    })
+                }
+            });
+    </script>
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/language/en-gb/account/edit.php">
+        <operation>
+            <search><![CDATA[// Error]]></search>
+            <add position="after"><![CDATA[
+            $_['error_telephone_exists']       = 'Warning: Telephone address is already registered!';
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/language/id-id/account/edit.php">
+        <operation>
+            <search><![CDATA[// Error]]></search>
+            <add position="after"><![CDATA[
+            $_['error_telephone_exists']       = 'Peringatan: Nomor telefon sudah digunakan!';
+            ]]></add>
+        </operation>
+    </file>
+</modification>
